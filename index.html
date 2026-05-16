@@ -13,476 +13,131 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
   :root {
-    --bg: #0f1117;
-    --bg2: #161b26;
-    --bg3: #1e2535;
-    --bg4: #252d40;
-    --border: rgba(255,255,255,0.07);
-    --border2: rgba(255,255,255,0.13);
-    --accent: #7c6cff;
-    --accent2: #a89fff;
-    --green: #2dd4a0;
-    --amber: #f5a623;
-    --red: #ff5f5f;
-    --blue: #4ca8f5;
-    --text: #e8eaf6;
-    --text2: #8b92a8;
-    --text3: #5a6278;
-    --font-head: 'Syne', sans-serif;
-    --font-body: 'DM Sans', sans-serif;
-    --font-mono: 'DM Mono', monospace;
-    --radius: 14px;
-    --radius-sm: 8px;
+    --bg: #0f1117; --bg2: #161b26; --bg3: #1e2535; --bg4: #252d40;
+    --border: rgba(255,255,255,0.07); --border2: rgba(255,255,255,0.13);
+    --accent: #7c6cff; --accent2: #a89fff;
+    --green: #2dd4a0; --amber: #f5a623; --red: #ff5f5f; --blue: #4ca8f5;
+    --text: #e8eaf6; --text2: #8b92a8; --text3: #5a6278;
+    --font-head: 'Syne', sans-serif; --font-body: 'DM Sans', sans-serif; --font-mono: 'DM Mono', monospace;
+    --radius: 14px; --radius-sm: 8px;
   }
-
   * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: var(--font-body);
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
-
-  /* ── LAYOUT ── */
-  .app-shell {
-    display: grid;
-    grid-template-rows: auto 1fr;
-    min-height: 100vh;
-  }
-
-  header {
-    background: var(--bg2);
-    border-bottom: 1px solid var(--border);
-    padding: 0 1.5rem;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    height: 60px;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-  }
-
-  .logo {
-    font-family: var(--font-head);
-    font-weight: 800;
-    font-size: 1.2rem;
-    letter-spacing: -0.02em;
-    color: var(--text);
-  }
-
+  body { background: var(--bg); color: var(--text); font-family: var(--font-body); min-height: 100vh; overflow-x: hidden; }
+ 
+  /* LAYOUT */
+  header { background: var(--bg2); border-bottom: 1px solid var(--border); padding: 0 1.5rem; display: flex; align-items: center; justify-content: space-between; height: 60px; position: sticky; top: 0; z-index: 100; }
+  .logo { font-family: var(--font-head); font-weight: 800; font-size: 1.2rem; letter-spacing: -0.02em; }
   .logo span { color: var(--accent); }
-
-  .header-right {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-
-  .tabs {
-    display: flex;
-    gap: 4px;
-    background: var(--bg3);
-    padding: 4px;
-    border-radius: var(--radius-sm);
-    border: 1px solid var(--border);
-  }
-
-  .tab-btn {
-    background: none;
-    border: none;
-    color: var(--text2);
-    font-family: var(--font-body);
-    font-size: 0.82rem;
-    font-weight: 500;
-    padding: 6px 14px;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: all 0.2s;
-    white-space: nowrap;
-  }
-
-  .tab-btn.active {
-    background: var(--accent);
-    color: white;
-  }
-
-  .tab-btn:hover:not(.active) {
-    background: var(--bg4);
-    color: var(--text);
-  }
-
-  main {
-    padding: 1.5rem;
-    max-width: 1200px;
-    margin: 0 auto;
-    width: 100%;
-  }
-
+  .sync-status { display: flex; align-items: center; gap: 6px; font-size: 0.75rem; color: var(--text3); font-family: var(--font-mono); }
+  .sync-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--text3); flex-shrink: 0; transition: background 0.3s; }
+  .sync-dot.ok { background: var(--green); }
+  .sync-dot.err { background: var(--red); }
+  .sync-dot.spin { background: var(--amber); animation: pulse 1s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+ 
+  .tabs { display: flex; gap: 4px; background: var(--bg3); padding: 4px; border-radius: var(--radius-sm); border: 1px solid var(--border); }
+  .tab-btn { background: none; border: none; color: var(--text2); font-family: var(--font-body); font-size: 0.82rem; font-weight: 500; padding: 6px 14px; border-radius: 5px; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+  .tab-btn.active { background: var(--accent); color: white; }
+  .tab-btn:hover:not(.active) { background: var(--bg4); color: var(--text); }
+ 
+  main { padding: 1.5rem; max-width: 1200px; margin: 0 auto; width: 100%; }
   .page { display: none; }
   .page.active { display: block; }
-
-  /* ── CARDS ── */
-  .card {
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 1.25rem 1.5rem;
-  }
-
-  .card-title {
-    font-family: var(--font-head);
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: var(--text3);
-    margin-bottom: 1rem;
-  }
-
-  /* ── STAT GRID ── */
-  .stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-    gap: 12px;
-    margin-bottom: 1.5rem;
-  }
-
-  .stat-card {
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 1rem 1.25rem;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .stat-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 2px;
-  }
-
+ 
+  /* CARDS */
+  .card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem 1.5rem; }
+  .card-title { font-family: var(--font-head); font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text3); margin-bottom: 1rem; }
+ 
+  /* SETUP BANNER */
+  .setup-banner { background: linear-gradient(135deg, rgba(124,108,255,0.12), rgba(76,168,245,0.08)); border: 1px solid rgba(124,108,255,0.3); border-radius: var(--radius); padding: 1.5rem; margin-bottom: 1.5rem; }
+  .setup-banner h2 { font-family: var(--font-head); font-size: 1.1rem; font-weight: 700; margin-bottom: 0.5rem; }
+  .setup-banner p { font-size: 0.85rem; color: var(--text2); margin-bottom: 1rem; line-height: 1.6; }
+  .url-input-row { display: flex; gap: 8px; }
+  .url-input { background: var(--bg3); border: 1px solid var(--border2); border-radius: var(--radius-sm); color: var(--text); font-family: var(--font-mono); font-size: 0.82rem; padding: 10px 14px; outline: none; flex: 1; transition: border-color 0.2s; }
+  .url-input:focus { border-color: var(--accent); }
+  .url-input::placeholder { color: var(--text3); }
+ 
+  /* STATS */
+  .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; margin-bottom: 1.5rem; }
+  .stat-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem 1.25rem; position: relative; overflow: hidden; }
+  .stat-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; }
   .stat-card.weight::before { background: var(--accent); }
   .stat-card.calories::before { background: var(--amber); }
   .stat-card.steps::before { background: var(--green); }
   .stat-card.sleep::before { background: var(--blue); }
-
-  .stat-label {
-    font-size: 0.72rem;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--text3);
-    margin-bottom: 6px;
-  }
-
-  .stat-value {
-    font-family: var(--font-mono);
-    font-size: 1.7rem;
-    font-weight: 500;
-    line-height: 1;
-    color: var(--text);
-  }
-
-  .stat-unit {
-    font-size: 0.75rem;
-    color: var(--text3);
-    margin-top: 4px;
-    font-family: var(--font-body);
-  }
-
-  .stat-delta {
-    font-size: 0.72rem;
-    font-family: var(--font-mono);
-    margin-top: 6px;
-  }
-
-  .delta-up { color: var(--red); }
-  .delta-down { color: var(--green); }
-  .delta-neu { color: var(--text3); }
-
-  /* ── FORM ── */
-  .form-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 12px;
-    margin-bottom: 1rem;
-  }
-
-  .form-group {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
-
-  .form-label {
-    font-size: 0.75rem;
-    font-weight: 500;
-    color: var(--text2);
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-  }
-
-  .form-input {
-    background: var(--bg3);
-    border: 1px solid var(--border2);
-    border-radius: var(--radius-sm);
-    color: var(--text);
-    font-family: var(--font-mono);
-    font-size: 0.95rem;
-    padding: 10px 14px;
-    outline: none;
-    transition: border-color 0.2s;
-    width: 100%;
-    -webkit-appearance: none;
-  }
-
-  .form-input:focus {
-    border-color: var(--accent);
-  }
-
+  .stat-label { font-size: 0.72rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text3); margin-bottom: 6px; }
+  .stat-value { font-family: var(--font-mono); font-size: 1.7rem; font-weight: 500; line-height: 1; color: var(--text); }
+  .stat-unit { font-size: 0.75rem; color: var(--text3); margin-top: 4px; }
+  .stat-delta { font-size: 0.72rem; font-family: var(--font-mono); margin-top: 6px; }
+  .delta-up { color: var(--red); } .delta-down { color: var(--green); } .delta-neu { color: var(--text3); }
+ 
+  /* FORM */
+  .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 1rem; }
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-label { font-size: 0.75rem; font-weight: 500; color: var(--text2); letter-spacing: 0.04em; text-transform: uppercase; }
+  .form-input { background: var(--bg3); border: 1px solid var(--border2); border-radius: var(--radius-sm); color: var(--text); font-family: var(--font-mono); font-size: 0.95rem; padding: 10px 14px; outline: none; transition: border-color 0.2s; width: 100%; -webkit-appearance: none; }
+  .form-input:focus { border-color: var(--accent); }
   .form-input::placeholder { color: var(--text3); }
-
-  .btn-row {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-  }
-
-  .btn {
-    font-family: var(--font-body);
-    font-size: 0.88rem;
-    font-weight: 500;
-    padding: 10px 20px;
-    border-radius: var(--radius-sm);
-    border: none;
-    cursor: pointer;
-    transition: all 0.2s;
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-  }
-
-  .btn-primary {
-    background: var(--accent);
-    color: white;
-  }
-
+  .btn-row { display: flex; gap: 10px; flex-wrap: wrap; }
+  .btn { font-family: var(--font-body); font-size: 0.88rem; font-weight: 500; padding: 10px 20px; border-radius: var(--radius-sm); border: none; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 7px; }
+  .btn-primary { background: var(--accent); color: white; }
   .btn-primary:hover { background: #6b5ce0; }
   .btn-primary:active { transform: scale(0.97); }
-
-  .btn-ghost {
-    background: var(--bg3);
-    color: var(--text2);
-    border: 1px solid var(--border2);
-  }
-
+  .btn-ghost { background: var(--bg3); color: var(--text2); border: 1px solid var(--border2); }
   .btn-ghost:hover { background: var(--bg4); color: var(--text); }
-
-  .btn-danger {
-    background: rgba(255,95,95,0.12);
-    color: var(--red);
-    border: 1px solid rgba(255,95,95,0.25);
-  }
-
+  .btn-danger { background: rgba(255,95,95,0.12); color: var(--red); border: 1px solid rgba(255,95,95,0.25); }
   .btn-danger:hover { background: rgba(255,95,95,0.22); }
-
   .btn-sm { padding: 6px 12px; font-size: 0.78rem; }
-
-  /* ── TABLE ── */
-  .table-wrapper {
-    overflow-x: auto;
-    border-radius: var(--radius);
-    border: 1px solid var(--border);
-  }
-
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.87rem;
-  }
-
-  thead th {
-    background: var(--bg3);
-    padding: 10px 14px;
-    text-align: left;
-    font-size: 0.7rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--text3);
-    border-bottom: 1px solid var(--border);
-    white-space: nowrap;
-  }
-
-  tbody tr {
-    border-bottom: 1px solid var(--border);
-    transition: background 0.15s;
-  }
-
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+ 
+  /* TABLE */
+  .table-wrapper { overflow-x: auto; border-radius: var(--radius); border: 1px solid var(--border); }
+  table { width: 100%; border-collapse: collapse; font-size: 0.87rem; }
+  thead th { background: var(--bg3); padding: 10px 14px; text-align: left; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text3); border-bottom: 1px solid var(--border); white-space: nowrap; }
+  tbody tr { border-bottom: 1px solid var(--border); transition: background 0.15s; }
   tbody tr:last-child { border-bottom: none; }
   tbody tr:hover { background: var(--bg3); }
-
-  tbody td {
-    padding: 11px 14px;
-    font-family: var(--font-mono);
-    font-size: 0.84rem;
-    color: var(--text2);
-  }
-
-  tbody td.date-cell {
-    color: var(--text);
-    font-weight: 500;
-  }
-
-  /* ── CHARTS ── */
-  .charts-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 16px;
-    margin-bottom: 1.5rem;
-  }
-
-  .chart-card {
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 1.25rem;
-  }
-
-  .chart-title {
-    font-family: var(--font-head);
-    font-size: 0.8rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: var(--text3);
-    margin-bottom: 1rem;
-  }
-
-  .chart-wrap {
-    position: relative;
-    height: 200px;
-  }
-
-  /* ── EXPORT ── */
-  .export-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    gap: 12px;
-  }
-
-  .export-card {
-    background: var(--bg3);
-    border: 1px solid var(--border2);
-    border-radius: var(--radius);
-    padding: 1.25rem;
-    cursor: pointer;
-    transition: all 0.2s;
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-  }
-
-  .export-card:hover {
-    background: var(--bg4);
-    border-color: var(--accent);
-  }
-
-  .export-icon {
-    font-size: 2rem;
-    line-height: 1;
-  }
-
-  .export-name {
-    font-family: var(--font-head);
-    font-size: 1rem;
-    font-weight: 700;
-    color: var(--text);
-  }
-
-  .export-desc {
-    font-size: 0.75rem;
-    color: var(--text3);
-  }
-
-  /* ── EMPTY STATE ── */
-  .empty-state {
-    text-align: center;
-    padding: 3rem 1rem;
-    color: var(--text3);
-  }
-
+  tbody td { padding: 11px 14px; font-family: var(--font-mono); font-size: 0.84rem; color: var(--text2); }
+  tbody td.date-cell { color: var(--text); font-weight: 500; }
+ 
+  /* CHARTS */
+  .charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 1.5rem; }
+  .chart-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; }
+  .chart-title { font-family: var(--font-head); font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text3); margin-bottom: 1rem; }
+  .chart-wrap { position: relative; height: 200px; }
+ 
+  /* EXPORT */
+  .export-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
+  .export-card { background: var(--bg3); border: 1px solid var(--border2); border-radius: var(--radius); padding: 1.25rem; cursor: pointer; transition: all 0.2s; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  .export-card:hover { background: var(--bg4); border-color: var(--accent); }
+  .export-icon { font-size: 2rem; line-height: 1; }
+  .export-name { font-family: var(--font-head); font-size: 1rem; font-weight: 700; color: var(--text); }
+  .export-desc { font-size: 0.75rem; color: var(--text3); }
+ 
+  /* MISC */
+  .empty-state { text-align: center; padding: 3rem 1rem; color: var(--text3); }
   .empty-state .big { font-size: 2.5rem; margin-bottom: 0.5rem; }
-  .empty-state p { font-size: 0.9rem; }
-
-  /* ── TOAST ── */
-  .toast {
-    position: fixed;
-    bottom: 1.5rem;
-    right: 1.5rem;
-    background: var(--bg4);
-    border: 1px solid var(--border2);
-    border-left: 3px solid var(--green);
-    border-radius: var(--radius-sm);
-    padding: 12px 18px;
-    font-size: 0.85rem;
-    color: var(--text);
-    z-index: 999;
-    opacity: 0;
-    transform: translateY(10px);
-    transition: all 0.3s;
-    pointer-events: none;
-  }
-
-  .toast.show {
-    opacity: 1;
-    transform: translateY(0);
-  }
-
-  /* ── SECTION SPACING ── */
+  .toast { position: fixed; bottom: 1.5rem; right: 1.5rem; background: var(--bg4); border: 1px solid var(--border2); border-left: 3px solid var(--green); border-radius: var(--radius-sm); padding: 12px 18px; font-size: 0.85rem; color: var(--text); z-index: 999; opacity: 0; transform: translateY(10px); transition: all 0.3s; pointer-events: none; }
+  .toast.show { opacity: 1; transform: translateY(0); }
   .section-gap { margin-bottom: 1.5rem; }
-
-  /* ── DATE DISPLAY ── */
-  .greeting {
-    font-family: var(--font-head);
-    font-size: 1.4rem;
-    font-weight: 700;
-    color: var(--text);
-    margin-bottom: 0.25rem;
-  }
-
-  .date-display {
-    font-size: 0.82rem;
-    color: var(--text3);
-    font-family: var(--font-mono);
-    margin-bottom: 1.5rem;
-  }
-
-  /* ── BADGE ── */
-  .badge {
-    display: inline-flex;
-    align-items: center;
-    font-size: 0.7rem;
-    font-weight: 500;
-    padding: 3px 9px;
-    border-radius: 20px;
-    font-family: var(--font-mono);
-  }
-
-  .badge-total {
-    background: rgba(124, 108, 255, 0.15);
-    color: var(--accent2);
-    border: 1px solid rgba(124, 108, 255, 0.2);
-  }
-
-  /* ── RESPONSIVE MOBILE ── */
+  .greeting { font-family: var(--font-head); font-size: 1.4rem; font-weight: 700; color: var(--text); margin-bottom: 0.25rem; }
+  .date-display { font-size: 0.82rem; color: var(--text3); font-family: var(--font-mono); margin-bottom: 1.5rem; }
+  .badge { display: inline-flex; align-items: center; font-size: 0.7rem; font-weight: 500; padding: 3px 9px; border-radius: 20px; font-family: var(--font-mono); }
+  .badge-total { background: rgba(124,108,255,0.15); color: var(--accent2); border: 1px solid rgba(124,108,255,0.2); }
+ 
+  /* LOADING OVERLAY */
+  .loading-overlay { position: fixed; inset: 0; background: rgba(15,17,23,0.85); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 500; gap: 16px; }
+  .spinner { width: 36px; height: 36px; border: 3px solid var(--bg4); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-text { font-family: var(--font-mono); font-size: 0.85rem; color: var(--text3); }
+ 
+  /* STEP LIST */
+  .step-list { list-style: none; counter-reset: steps; display: flex; flex-direction: column; gap: 14px; }
+  .step-list li { counter-increment: steps; display: flex; gap: 14px; align-items: flex-start; font-size: 0.88rem; color: var(--text2); line-height: 1.6; }
+  .step-list li::before { content: counter(steps); background: var(--accent); color: white; border-radius: 50%; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; font-size: 0.72rem; font-weight: 700; flex-shrink: 0; margin-top: 2px; }
+  .step-list code { background: var(--bg3); border: 1px solid var(--border2); border-radius: 4px; padding: 1px 7px; font-family: var(--font-mono); font-size: 0.82rem; color: var(--accent2); }
+ 
+  /* MOBILE */
   @media (max-width: 600px) {
     header { padding: 0 1rem; height: 56px; }
     .logo { font-size: 1.05rem; }
@@ -493,858 +148,829 @@
     .form-grid { grid-template-columns: 1fr; }
     .charts-grid { grid-template-columns: 1fr; }
     .export-grid { grid-template-columns: repeat(3, 1fr); }
-    .btn { font-size: 0.83rem; padding: 9px 14px; }
+    .url-input-row { flex-direction: column; }
+    .sync-label { display: none; }
   }
-
-  /* scrollbar */
   ::-webkit-scrollbar { width: 5px; height: 5px; }
   ::-webkit-scrollbar-track { background: var(--bg); }
   ::-webkit-scrollbar-thumb { background: var(--bg4); border-radius: 3px; }
 </style>
 </head>
 <body>
-
-<div class="app-shell">
-  <header>
-    <div class="logo">Vital<span>Log</span></div>
-    <div class="header-right">
-      <div class="tabs">
-        <button class="tab-btn active" onclick="showPage('dashboard')">Dashboard</button>
-        <button class="tab-btn" onclick="showPage('log')">Log</button>
-        <button class="tab-btn" onclick="showPage('history')">History</button>
-        <button class="tab-btn" onclick="showPage('charts')">Charts</button>
-        <button class="tab-btn" onclick="showPage('export')">Export</button>
-      </div>
-    </div>
-  </header>
-
-  <main>
-
-    <!-- DASHBOARD -->
-    <div id="page-dashboard" class="page active">
-      <div class="greeting" id="greeting">Good morning</div>
-      <div class="date-display" id="today-display">—</div>
-
-      <div class="stats-grid" id="stats-grid">
-        <div class="stat-card weight">
-          <div class="stat-label">Latest Weight</div>
-          <div class="stat-value" id="stat-weight">—</div>
-          <div class="stat-unit">kg</div>
-          <div class="stat-delta" id="delta-weight"></div>
-        </div>
-        <div class="stat-card calories">
-          <div class="stat-label">Last Calories</div>
-          <div class="stat-value" id="stat-calories">—</div>
-          <div class="stat-unit">kcal</div>
-          <div class="stat-delta" id="delta-calories"></div>
-        </div>
-        <div class="stat-card steps">
-          <div class="stat-label">Last Steps</div>
-          <div class="stat-value" id="stat-steps">—</div>
-          <div class="stat-unit">steps</div>
-          <div class="stat-delta" id="delta-steps"></div>
-        </div>
-        <div class="stat-card sleep">
-          <div class="stat-label">Last Sleep</div>
-          <div class="stat-value" id="stat-sleep">—</div>
-          <div class="stat-unit">hours</div>
-          <div class="stat-delta" id="delta-sleep"></div>
-        </div>
-      </div>
-
-      <div class="charts-grid">
-        <div class="chart-card">
-          <div class="chart-title">Weight trend — last 14 days</div>
-          <div class="chart-wrap"><canvas id="mini-weight"></canvas></div>
-        </div>
-        <div class="chart-card">
-          <div class="chart-title">Steps — last 14 days</div>
-          <div class="chart-wrap"><canvas id="mini-steps"></canvas></div>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-title">Quick stats</div>
-        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap:12px;" id="quick-stats">
-          <div>
-            <div style="font-size:0.75rem; color:var(--text3); margin-bottom:4px;">Avg Weight (30d)</div>
-            <div style="font-family:var(--font-mono); font-size:1rem;" id="qs-avgwt">—</div>
-          </div>
-          <div>
-            <div style="font-size:0.75rem; color:var(--text3); margin-bottom:4px;">Avg Calories (30d)</div>
-            <div style="font-family:var(--font-mono); font-size:1rem;" id="qs-avgcal">—</div>
-          </div>
-          <div>
-            <div style="font-size:0.75rem; color:var(--text3); margin-bottom:4px;">Avg Steps (30d)</div>
-            <div style="font-family:var(--font-mono); font-size:1rem;" id="qs-avgsteps">—</div>
-          </div>
-          <div>
-            <div style="font-size:0.75rem; color:var(--text3); margin-bottom:4px;">Avg Sleep (30d)</div>
-            <div style="font-family:var(--font-mono); font-size:1rem;" id="qs-avgsleep">—</div>
-          </div>
-          <div>
-            <div style="font-size:0.75rem; color:var(--text3); margin-bottom:4px;">Total Entries</div>
-            <div style="font-family:var(--font-mono); font-size:1rem;" id="qs-total">0</div>
-          </div>
-          <div>
-            <div style="font-size:0.75rem; color:var(--text3); margin-bottom:4px;">Min Weight</div>
-            <div style="font-family:var(--font-mono); font-size:1rem;" id="qs-minwt">—</div>
-          </div>
-          <div>
-            <div style="font-size:0.75rem; color:var(--text3); margin-bottom:4px;">Max Weight</div>
-            <div style="font-family:var(--font-mono); font-size:1rem;" id="qs-maxwt">—</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- LOG ENTRY -->
-    <div id="page-log" class="page">
-      <div class="card section-gap">
-        <div class="card-title">Add / update entry</div>
-        <div class="form-grid">
-          <div class="form-group" style="position:relative;">
-            <label class="form-label">Date</label>
-            <div style="display:flex; gap:6px; align-items:stretch;">
-              <input class="form-input" type="text" id="inp-date" placeholder="01-Jan-2025" style="flex:1; border-radius:var(--radius-sm) 0 0 var(--radius-sm); border-right:none;" oninput="syncCalFromText()" autocomplete="off">
-              <button type="button" id="cal-toggle-btn" onclick="toggleCalendar()" title="Pick from calendar"
-                style="background:var(--bg3); border:1px solid var(--border2); border-radius:0 var(--radius-sm) var(--radius-sm) 0; padding:0 13px; cursor:pointer; color:var(--text2); font-size:1.1rem; transition:background 0.2s; flex-shrink:0;">
-                📅
-              </button>
-            </div>
-            <!-- Calendar dropdown -->
-            <div id="cal-dropdown" style="display:none; position:absolute; top:calc(100% + 6px); left:0; z-index:200; background:var(--bg2); border:1px solid var(--border2); border-radius:var(--radius); padding:14px; min-width:280px; box-shadow:0 8px 32px rgba(0,0,0,0.5);">
-              <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
-                <button type="button" onclick="calNav(-1)" style="background:var(--bg3); border:1px solid var(--border); border-radius:6px; color:var(--text2); cursor:pointer; padding:4px 10px; font-size:1rem;">‹</button>
-                <span id="cal-month-label" style="font-family:var(--font-head); font-weight:700; font-size:0.95rem; color:var(--text);"></span>
-                <button type="button" onclick="calNav(1)"  style="background:var(--bg3); border:1px solid var(--border); border-radius:6px; color:var(--text2); cursor:pointer; padding:4px 10px; font-size:1rem;">›</button>
-              </div>
-              <div style="display:grid; grid-template-columns:repeat(7,1fr); gap:3px; text-align:center; margin-bottom:6px;">
-                <span style="font-size:0.68rem; color:var(--text3); font-weight:600;">Su</span>
-                <span style="font-size:0.68rem; color:var(--text3); font-weight:600;">Mo</span>
-                <span style="font-size:0.68rem; color:var(--text3); font-weight:600;">Tu</span>
-                <span style="font-size:0.68rem; color:var(--text3); font-weight:600;">We</span>
-                <span style="font-size:0.68rem; color:var(--text3); font-weight:600;">Th</span>
-                <span style="font-size:0.68rem; color:var(--text3); font-weight:600;">Fr</span>
-                <span style="font-size:0.68rem; color:var(--text3); font-weight:600;">Sa</span>
-              </div>
-              <div id="cal-grid" style="display:grid; grid-template-columns:repeat(7,1fr); gap:3px; text-align:center;"></div>
-              <div style="margin-top:10px; border-top:1px solid var(--border); padding-top:10px; display:flex; justify-content:space-between; align-items:center;">
-                <button type="button" onclick="calSelectToday()" style="background:none; border:none; color:var(--accent2); font-size:0.78rem; cursor:pointer; font-family:var(--font-body);">Today</button>
-                <button type="button" onclick="toggleCalendar()" style="background:none; border:none; color:var(--text3); font-size:0.78rem; cursor:pointer; font-family:var(--font-body);">Close</button>
-              </div>
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="form-label" for="inp-weight">Weight (kg)</label>
-            <input class="form-input" type="number" id="inp-weight" placeholder="72.5" step="0.1">
-          </div>
-          <div class="form-group">
-            <label class="form-label" for="inp-calories">Calories (kcal)</label>
-            <input class="form-input" type="number" id="inp-calories" placeholder="2100" step="1">
-          </div>
-          <div class="form-group">
-            <label class="form-label" for="inp-steps">Steps</label>
-            <input class="form-input" type="number" id="inp-steps" placeholder="8500" step="1">
-          </div>
-          <div class="form-group">
-            <label class="form-label" for="inp-sleep">Sleep (hrs)</label>
-            <input class="form-input" type="number" id="inp-sleep" placeholder="7.5" step="0.25">
-          </div>
-        </div>
-        <div class="btn-row">
-          <button class="btn btn-primary" onclick="saveEntry()">＋ Save Entry</button>
-          <button class="btn btn-ghost" onclick="fillToday()">Use Today's Date</button>
-          <button class="btn btn-ghost" onclick="clearForm()">Clear</button>
-        </div>
-      </div>
-
-      <div class="card" id="edit-note" style="display:none; border-color: rgba(245,166,35,0.3);">
-        <div style="font-size:0.82rem; color:var(--amber);">
-          ✏️ Editing existing entry. Save to update.
-          <button class="btn btn-ghost btn-sm" style="margin-left:10px;" onclick="cancelEdit()">Cancel</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- HISTORY -->
-    <div id="page-history" class="page">
-      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1rem; flex-wrap:wrap; gap:10px;">
-        <div style="display:flex; align-items:center; gap:10px;">
-          <span style="font-family:var(--font-head); font-size:1rem; font-weight:700;">All Entries</span>
-          <span class="badge badge-total" id="entry-count">0 entries</span>
-        </div>
-        <input class="form-input" type="text" id="search-input" placeholder="Search by date…" style="width:200px;" oninput="renderHistory()">
-      </div>
-      <div class="table-wrapper">
-        <table id="history-table">
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Weight (kg)</th>
-              <th>Calories</th>
-              <th>Steps</th>
-              <th>Sleep (hrs)</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody id="history-body">
-          </tbody>
-        </table>
-      </div>
-      <div class="empty-state" id="history-empty" style="display:none;">
-        <div class="big">📋</div>
-        <p>No entries yet. Start logging from the Log tab.</p>
-      </div>
-    </div>
-
-    <!-- CHARTS -->
-    <div id="page-charts" class="page">
-      <div style="display:flex; gap:10px; margin-bottom:1.5rem; flex-wrap:wrap;">
-        <button class="btn btn-ghost btn-sm" onclick="setRange(14)" id="range-14">14 days</button>
-        <button class="btn btn-ghost btn-sm" onclick="setRange(30)" id="range-30">30 days</button>
-        <button class="btn btn-ghost btn-sm" onclick="setRange(90)" id="range-90">90 days</button>
-        <button class="btn btn-ghost btn-sm" onclick="setRange(0)" id="range-all">All time</button>
-      </div>
-
-      <div style="display:grid; grid-template-columns: 1fr; gap:16px;">
-        <div class="chart-card">
-          <div class="chart-title">Weight (kg)</div>
-          <div class="chart-wrap" style="height:220px;"><canvas id="chart-weight"></canvas></div>
-        </div>
-        <div class="chart-card">
-          <div class="chart-title">Calories (kcal)</div>
-          <div class="chart-wrap" style="height:220px;"><canvas id="chart-calories"></canvas></div>
-        </div>
-        <div class="chart-card">
-          <div class="chart-title">Daily Steps</div>
-          <div class="chart-wrap" style="height:220px;"><canvas id="chart-steps"></canvas></div>
-        </div>
-        <div class="chart-card">
-          <div class="chart-title">Sleep (hrs)</div>
-          <div class="chart-wrap" style="height:220px;"><canvas id="chart-sleep"></canvas></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- EXPORT -->
-    <div id="page-export" class="page">
-      <div class="card section-gap">
-        <div class="card-title">Export your data</div>
-        <p style="font-size:0.85rem; color:var(--text2); margin-bottom:1.5rem;">
-          Download all your health data in your preferred format. Data is stored locally in your browser.
-        </p>
-        <div class="export-grid">
-          <div class="export-card" onclick="exportCSV()">
-            <div class="export-icon">📄</div>
-            <div class="export-name">CSV</div>
-            <div class="export-desc">Comma-separated, open in any spreadsheet</div>
-          </div>
-          <div class="export-card" onclick="exportXLSX()">
-            <div class="export-icon">📊</div>
-            <div class="export-name">Excel</div>
-            <div class="export-desc">.xlsx file with formatted sheet</div>
-          </div>
-          <div class="export-card" onclick="exportPDF()">
-            <div class="export-icon">📑</div>
-            <div class="export-name">PDF</div>
-            <div class="export-desc">Printable report with all entries</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-title">Data management</div>
-        <div class="btn-row">
-          <button class="btn btn-ghost" onclick="importJSON()">⬆ Import backup</button>
-          <button class="btn btn-ghost" onclick="exportJSON()">⬇ Download backup (.json)</button>
-          <button class="btn btn-danger" onclick="clearAll()">🗑 Clear all data</button>
-        </div>
-        <p style="font-size:0.75rem; color:var(--text3); margin-top:12px;">Data is stored in your browser's localStorage. Use backup to transfer between devices.</p>
-      </div>
-    </div>
-
-  </main>
+ 
+<div id="loading-overlay" class="loading-overlay">
+  <div class="spinner"></div>
+  <div class="loading-text" id="loading-text">Loading VitalLog…</div>
 </div>
-
+ 
+<header>
+  <div class="logo">Vital<span>Log</span></div>
+  <div style="display:flex; align-items:center; gap:14px;">
+    <div class="sync-status">
+      <div class="sync-dot" id="sync-dot"></div>
+      <span class="sync-label" id="sync-label">Not connected</span>
+    </div>
+    <div class="tabs">
+      <button class="tab-btn active" onclick="showPage('dashboard',this)">Dashboard</button>
+      <button class="tab-btn" onclick="showPage('log',this)">Log</button>
+      <button class="tab-btn" onclick="showPage('history',this)">History</button>
+      <button class="tab-btn" onclick="showPage('charts',this)">Charts</button>
+      <button class="tab-btn" onclick="showPage('export',this)">Export</button>
+      <button class="tab-btn" onclick="showPage('setup',this)">⚙ Setup</button>
+    </div>
+  </div>
+</header>
+ 
+<main>
+ 
+  <!-- DASHBOARD -->
+  <div id="page-dashboard" class="page active">
+    <div class="greeting" id="greeting">Good morning, Deepak</div>
+    <div class="date-display" id="today-display">—</div>
+    <div class="stats-grid">
+      <div class="stat-card weight">
+        <div class="stat-label">Latest Weight</div>
+        <div class="stat-value" id="stat-weight">—</div>
+        <div class="stat-unit">kg</div>
+        <div class="stat-delta" id="delta-weight"></div>
+      </div>
+      <div class="stat-card calories">
+        <div class="stat-label">Last Calories</div>
+        <div class="stat-value" id="stat-calories">—</div>
+        <div class="stat-unit">kcal</div>
+        <div class="stat-delta" id="delta-calories"></div>
+      </div>
+      <div class="stat-card steps">
+        <div class="stat-label">Last Steps</div>
+        <div class="stat-value" id="stat-steps">—</div>
+        <div class="stat-unit">steps</div>
+        <div class="stat-delta" id="delta-steps"></div>
+      </div>
+      <div class="stat-card sleep">
+        <div class="stat-label">Last Sleep</div>
+        <div class="stat-value" id="stat-sleep">—</div>
+        <div class="stat-unit">hours</div>
+        <div class="stat-delta" id="delta-sleep"></div>
+      </div>
+    </div>
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="chart-title">Weight trend — last 14 days</div>
+        <div class="chart-wrap"><canvas id="mini-weight"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Steps — last 14 days</div>
+        <div class="chart-wrap"><canvas id="mini-steps"></canvas></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Quick stats — last 30 days</div>
+      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap:12px;">
+        <div><div style="font-size:0.75rem; color:var(--text3); margin-bottom:4px;">Avg Weight</div><div style="font-family:var(--font-mono); font-size:1rem;" id="qs-avgwt">—</div></div>
+        <div><div style="font-size:0.75rem; color:var(--text3); margin-bottom:4px;">Avg Calories</div><div style="font-family:var(--font-mono); font-size:1rem;" id="qs-avgcal">—</div></div>
+        <div><div style="font-size:0.75rem; color:var(--text3); margin-bottom:4px;">Avg Steps</div><div style="font-family:var(--font-mono); font-size:1rem;" id="qs-avgsteps">—</div></div>
+        <div><div style="font-size:0.75rem; color:var(--text3); margin-bottom:4px;">Avg Sleep</div><div style="font-family:var(--font-mono); font-size:1rem;" id="qs-avgsleep">—</div></div>
+        <div><div style="font-size:0.75rem; color:var(--text3); margin-bottom:4px;">Total Entries</div><div style="font-family:var(--font-mono); font-size:1rem;" id="qs-total">0</div></div>
+        <div><div style="font-size:0.75rem; color:var(--text3); margin-bottom:4px;">Min Weight</div><div style="font-family:var(--font-mono); font-size:1rem;" id="qs-minwt">—</div></div>
+        <div><div style="font-size:0.75rem; color:var(--text3); margin-bottom:4px;">Max Weight</div><div style="font-family:var(--font-mono); font-size:1rem;" id="qs-maxwt">—</div></div>
+      </div>
+    </div>
+  </div>
+ 
+  <!-- LOG -->
+  <div id="page-log" class="page">
+    <div class="card section-gap">
+      <div class="card-title">Add / update entry</div>
+      <div class="form-grid">
+        <div class="form-group" style="position:relative;">
+          <label class="form-label">Date</label>
+          <div style="display:flex; gap:6px; align-items:stretch;">
+            <input class="form-input" type="text" id="inp-date" placeholder="01-Jan-2025" style="flex:1; border-radius:var(--radius-sm) 0 0 var(--radius-sm); border-right:none;" oninput="syncCalFromText()" autocomplete="off">
+            <button type="button" id="cal-toggle-btn" onclick="toggleCalendar()" title="Pick from calendar" style="background:var(--bg3); border:1px solid var(--border2); border-radius:0 var(--radius-sm) var(--radius-sm) 0; padding:0 13px; cursor:pointer; color:var(--text2); font-size:1.1rem; flex-shrink:0;">📅</button>
+          </div>
+          <div id="cal-dropdown" style="display:none; position:absolute; top:calc(100% + 6px); left:0; z-index:200; background:var(--bg2); border:1px solid var(--border2); border-radius:var(--radius); padding:14px; min-width:280px; box-shadow:0 8px 32px rgba(0,0,0,0.5);">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+              <button type="button" onclick="calNav(-1)" style="background:var(--bg3); border:1px solid var(--border); border-radius:6px; color:var(--text2); cursor:pointer; padding:4px 10px; font-size:1rem;">‹</button>
+              <span id="cal-month-label" style="font-family:var(--font-head); font-weight:700; font-size:0.95rem; color:var(--text);"></span>
+              <button type="button" onclick="calNav(1)" style="background:var(--bg3); border:1px solid var(--border); border-radius:6px; color:var(--text2); cursor:pointer; padding:4px 10px; font-size:1rem;">›</button>
+            </div>
+            <div style="display:grid; grid-template-columns:repeat(7,1fr); gap:3px; text-align:center; margin-bottom:6px;">
+              <span style="font-size:0.68rem; color:var(--text3); font-weight:600;">Su</span><span style="font-size:0.68rem; color:var(--text3); font-weight:600;">Mo</span><span style="font-size:0.68rem; color:var(--text3); font-weight:600;">Tu</span><span style="font-size:0.68rem; color:var(--text3); font-weight:600;">We</span><span style="font-size:0.68rem; color:var(--text3); font-weight:600;">Th</span><span style="font-size:0.68rem; color:var(--text3); font-weight:600;">Fr</span><span style="font-size:0.68rem; color:var(--text3); font-weight:600;">Sa</span>
+            </div>
+            <div id="cal-grid" style="display:grid; grid-template-columns:repeat(7,1fr); gap:3px; text-align:center;"></div>
+            <div style="margin-top:10px; border-top:1px solid var(--border); padding-top:10px; display:flex; justify-content:space-between;">
+              <button type="button" onclick="calSelectToday()" style="background:none; border:none; color:var(--accent2); font-size:0.78rem; cursor:pointer; font-family:var(--font-body);">Today</button>
+              <button type="button" onclick="toggleCalendar()" style="background:none; border:none; color:var(--text3); font-size:0.78rem; cursor:pointer; font-family:var(--font-body);">Close</button>
+            </div>
+          </div>
+        </div>
+        <div class="form-group"><label class="form-label">Weight (kg)</label><input class="form-input" type="number" id="inp-weight" placeholder="72.5" step="0.1"></div>
+        <div class="form-group"><label class="form-label">Calories (kcal)</label><input class="form-input" type="number" id="inp-calories" placeholder="2100" step="1"></div>
+        <div class="form-group"><label class="form-label">Steps</label><input class="form-input" type="number" id="inp-steps" placeholder="8500" step="1"></div>
+        <div class="form-group"><label class="form-label">Sleep (hrs)</label><input class="form-input" type="number" id="inp-sleep" placeholder="7.5" step="0.25"></div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary" id="save-btn" onclick="saveEntry()">＋ Save Entry</button>
+        <button class="btn btn-ghost" onclick="fillToday()">Use Today's Date</button>
+        <button class="btn btn-ghost" onclick="clearForm()">Clear</button>
+      </div>
+    </div>
+    <div class="card" id="edit-note" style="display:none; border-color: rgba(245,166,35,0.3);">
+      <div style="font-size:0.82rem; color:var(--amber);">✏️ Editing existing entry. Save to update.
+        <button class="btn btn-ghost btn-sm" style="margin-left:10px;" onclick="cancelEdit()">Cancel</button>
+      </div>
+    </div>
+  </div>
+ 
+  <!-- HISTORY -->
+  <div id="page-history" class="page">
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1rem; flex-wrap:wrap; gap:10px;">
+      <div style="display:flex; align-items:center; gap:10px;">
+        <span style="font-family:var(--font-head); font-size:1rem; font-weight:700;">All Entries</span>
+        <span class="badge badge-total" id="entry-count">0 entries</span>
+      </div>
+      <div style="display:flex; gap:8px; align-items:center;">
+        <input class="form-input" type="text" id="search-input" placeholder="Search by date…" style="width:200px;" oninput="renderHistory()">
+        <button class="btn btn-ghost btn-sm" onclick="loadFromSheet()">↻ Refresh</button>
+      </div>
+    </div>
+    <div class="table-wrapper">
+      <table>
+        <thead><tr><th>Date</th><th>Weight (kg)</th><th>Calories</th><th>Steps</th><th>Sleep (hrs)</th><th>Actions</th></tr></thead>
+        <tbody id="history-body"></tbody>
+      </table>
+    </div>
+    <div class="empty-state" id="history-empty" style="display:none;">
+      <div class="big">📋</div>
+      <p>No entries yet. Start logging from the Log tab.</p>
+    </div>
+  </div>
+ 
+  <!-- CHARTS -->
+  <div id="page-charts" class="page">
+    <div style="display:flex; gap:10px; margin-bottom:1.5rem; flex-wrap:wrap;">
+      <button class="btn btn-ghost btn-sm" onclick="setRange(14)" id="range-14">14 days</button>
+      <button class="btn btn-ghost btn-sm" onclick="setRange(30)" id="range-30">30 days</button>
+      <button class="btn btn-ghost btn-sm" onclick="setRange(90)" id="range-90">90 days</button>
+      <button class="btn btn-ghost btn-sm" onclick="setRange(0)" id="range-all">All time</button>
+    </div>
+    <div style="display:grid; grid-template-columns: 1fr; gap:16px;">
+      <div class="chart-card"><div class="chart-title">Weight (kg)</div><div class="chart-wrap" style="height:220px;"><canvas id="chart-weight"></canvas></div></div>
+      <div class="chart-card"><div class="chart-title">Calories (kcal)</div><div class="chart-wrap" style="height:220px;"><canvas id="chart-calories"></canvas></div></div>
+      <div class="chart-card"><div class="chart-title">Daily Steps</div><div class="chart-wrap" style="height:220px;"><canvas id="chart-steps"></canvas></div></div>
+      <div class="chart-card"><div class="chart-title">Sleep (hrs)</div><div class="chart-wrap" style="height:220px;"><canvas id="chart-sleep"></canvas></div></div>
+    </div>
+  </div>
+ 
+  <!-- EXPORT -->
+  <div id="page-export" class="page">
+    <div class="card section-gap">
+      <div class="card-title">Export your data</div>
+      <p style="font-size:0.85rem; color:var(--text2); margin-bottom:1.5rem;">Download all your health data in your preferred format. Your master data lives in Google Sheets.</p>
+      <div class="export-grid">
+        <div class="export-card" onclick="exportCSV()"><div class="export-icon">📄</div><div class="export-name">CSV</div><div class="export-desc">Open in any spreadsheet</div></div>
+        <div class="export-card" onclick="exportXLSX()"><div class="export-icon">📊</div><div class="export-name">Excel</div><div class="export-desc">.xlsx formatted file</div></div>
+        <div class="export-card" onclick="exportPDF()"><div class="export-icon">📑</div><div class="export-name">PDF</div><div class="export-desc">Printable report</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Your Google Sheet</div>
+      <p style="font-size:0.85rem; color:var(--text2); margin-bottom:1rem;">Your data lives here — you can always view, edit, or back it up directly.</p>
+      <button class="btn btn-ghost" onclick="openSheet()">↗ Open Google Sheet</button>
+    </div>
+  </div>
+ 
+  <!-- SETUP -->
+  <div id="page-setup" class="page">
+    <div class="setup-banner section-gap">
+      <h2>🔗 Connect to Google Sheets</h2>
+      <p>Your data will be stored permanently in your Google Sheet — safe across all devices, no localStorage risk.</p>
+      <div class="url-input-row">
+        <input class="url-input" type="text" id="script-url-input" placeholder="Paste your Apps Script Web App URL here…">
+        <button class="btn btn-primary" onclick="saveScriptUrl()">Connect</button>
+      </div>
+      <div id="connection-status" style="margin-top:10px; font-size:0.8rem; color:var(--text3);"></div>
+    </div>
+ 
+    <div class="card">
+      <div class="card-title">One-time setup — follow these steps</div>
+      <ol class="step-list">
+        <li>Go to <strong style="color:var(--accent2);">sheets.google.com</strong> and create a new blank spreadsheet. Name it <code>VitalLog</code>.</li>
+        <li>In the spreadsheet, click <strong style="color:var(--accent2);">Extensions → Apps Script</strong>.</li>
+        <li>Delete all existing code in the editor. Copy and paste the <strong style="color:var(--accent2);">Apps Script code</strong> shown below.</li>
+        <li>Click <strong style="color:var(--accent2);">Save</strong> (floppy disk icon), then click <strong style="color:var(--accent2);">Deploy → New deployment</strong>.</li>
+        <li>Set type to <code>Web app</code>. Set <em>Execute as</em> to <code>Me</code>. Set <em>Who has access</em> to <code>Anyone</code>. Click <strong style="color:var(--accent2);">Deploy</strong>.</li>
+        <li>Authorise the app when prompted (click <em>Allow</em>). Copy the <strong style="color:var(--accent2);">Web app URL</strong> and paste it above.</li>
+      </ol>
+ 
+      <div style="margin-top:1.5rem;">
+        <div class="card-title">Apps Script code — copy all of this</div>
+        <div style="position:relative;">
+          <pre id="apps-script-code" style="background:var(--bg3); border:1px solid var(--border2); border-radius:var(--radius-sm); padding:1rem; font-family:var(--font-mono); font-size:0.78rem; color:var(--text2); overflow-x:auto; line-height:1.7; white-space:pre;">const SHEET_NAME = 'Data';
+ 
+function getOrCreateSheet() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = ss.getSheetByName(SHEET_NAME);
+  if (!sheet) {
+    sheet = ss.insertSheet(SHEET_NAME);
+    sheet.appendRow(['Date','Weight','Calories','Steps','Sleep']);
+    sheet.getRange(1,1,1,5).setFontWeight('bold');
+  }
+  return sheet;
+}
+ 
+function doGet(e) {
+  const action = e.parameter.action;
+  if (action === 'getAll') return getAll();
+  return ContentService.createTextOutput(JSON.stringify({error:'Unknown action'}))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+ 
+function doPost(e) {
+  const data = JSON.parse(e.postData.contents);
+  if (data.action === 'upsert') return upsert(data.entry);
+  if (data.action === 'delete') return deleteRow(data.date);
+  return ContentService.createTextOutput(JSON.stringify({error:'Unknown action'}))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+ 
+function getAll() {
+  const sheet = getOrCreateSheet();
+  const rows = sheet.getDataRange().getValues();
+  const headers = rows[0];
+  const entries = rows.slice(1).map(r => ({
+    date: r[0], weight: r[1]||null, calories: r[2]||null,
+    steps: r[3]||null, sleep: r[4]||null
+  })).filter(e => e.date);
+  return ContentService.createTextOutput(JSON.stringify({ok:true, entries}))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+ 
+function upsert(entry) {
+  const sheet = getOrCreateSheet();
+  const rows = sheet.getDataRange().getValues();
+  for (let i = 1; i < rows.length; i++) {
+    if (rows[i][0] === entry.date) {
+      sheet.getRange(i+1,1,1,5).setValues([[
+        entry.date, entry.weight||'', entry.calories||'',
+        entry.steps||'', entry.sleep||''
+      ]]);
+      return ContentService.createTextOutput(JSON.stringify({ok:true,action:'updated'}))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+  }
+  sheet.appendRow([entry.date, entry.weight||'', entry.calories||'', entry.steps||'', entry.sleep||'']);
+  return ContentService.createTextOutput(JSON.stringify({ok:true,action:'inserted'}))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+ 
+function deleteRow(date) {
+  const sheet = getOrCreateSheet();
+  const rows = sheet.getDataRange().getValues();
+  for (let i = rows.length - 1; i >= 1; i--) {
+    if (rows[i][0] === date) {
+      sheet.deleteRow(i+1);
+      return ContentService.createTextOutput(JSON.stringify({ok:true}))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+  }
+  return ContentService.createTextOutput(JSON.stringify({ok:false,error:'Not found'}))
+    .setMimeType(ContentService.MimeType.JSON);
+}</pre>
+          <button class="btn btn-ghost btn-sm" onclick="copyScript()" style="margin-top:10px;">📋 Copy code</button>
+        </div>
+      </div>
+    </div>
+  </div>
+ 
+</main>
+ 
 <div class="toast" id="toast"></div>
-
-<input type="file" id="json-import" accept=".json" style="display:none" onchange="handleImport(event)">
-
+ 
 <script>
-// ── DATA ──────────────────────────────────────────────────────────────
-const STORAGE_KEY = 'vitallog_data_v1';
+// ── CONFIG ────────────────────────────────────────────────────────────
+const CONFIG_KEY = 'vitallog_config_v1';
+let SCRIPT_URL = '';
+let SHEET_ID   = '';
+ 
+function loadConfig() {
+  try {
+    const c = JSON.parse(localStorage.getItem(CONFIG_KEY) || '{}');
+    SCRIPT_URL = c.scriptUrl || '';
+    SHEET_ID   = c.sheetId  || '';
+  } catch(e) {}
+}
+ 
+function saveConfig() {
+  localStorage.setItem(CONFIG_KEY, JSON.stringify({ scriptUrl: SCRIPT_URL, sheetId: SHEET_ID }));
+}
+ 
+// ── STATE ─────────────────────────────────────────────────────────────
 let entries = [];
 let editingDate = null;
 let chartInstances = {};
 let currentRange = 30;
-
-function load() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    entries = raw ? JSON.parse(raw) : [];
-  } catch(e) { entries = []; }
-}
-
-function save() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
-}
-
-// ── DATE HELPERS ──────────────────────────────────────────────────────
+let calOpen = false;
+let calYear = new Date().getFullYear();
+let calMonth = new Date().getMonth();
+ 
 const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-
+ 
+// ── DATE HELPERS ──────────────────────────────────────────────────────
 function formatDate(d) {
-  const dd = String(d.getDate()).padStart(2,'0');
-  const mm = MONTHS[d.getMonth()];
-  const yyyy = d.getFullYear();
-  return `${dd}-${mm}-${yyyy}`;
+  return String(d.getDate()).padStart(2,'0') + '-' + MONTHS[d.getMonth()] + '-' + d.getFullYear();
 }
-
 function parseDate(s) {
-  const [dd, mm, yyyy] = s.split('-');
+  if (!s) return null;
+  const [dd,mm,yyyy] = s.split('-');
   const mi = MONTHS.indexOf(mm);
   if (mi === -1) return null;
   return new Date(+yyyy, mi, +dd);
 }
-
 function todayStr() { return formatDate(new Date()); }
-
 function sortEntries() {
-  entries.sort((a,b) => {
-    const da = parseDate(a.date), db = parseDate(b.date);
-    return da - db;
-  });
+  entries.sort((a,b) => { const da=parseDate(a.date), db=parseDate(b.date); return da-db; });
 }
-
+ 
 // ── INIT ──────────────────────────────────────────────────────────────
-load();
-
+loadConfig();
 const now = new Date();
 const hour = now.getHours();
-const greet = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
-document.getElementById('greeting').textContent = greet + ', Deepak';
-document.getElementById('today-display').textContent = formatDate(now) + ' · ' + now.toLocaleDateString('en-IN', {weekday:'long'});
-
+document.getElementById('greeting').textContent = (hour<12?'Good morning':hour<17?'Good afternoon':'Good evening') + ', Deepak';
+document.getElementById('today-display').textContent = formatDate(now) + ' · ' + now.toLocaleDateString('en-IN',{weekday:'long'});
 fillToday();
-refreshAll();
-
-// ── NAVIGATION ───────────────────────────────────────────────────────
-function showPage(name) {
+ 
+if (SCRIPT_URL) {
+  setSyncStatus('spin','Connecting…');
+  loadFromSheet();
+} else {
+  hideLoading();
+  setSyncStatus('err','Not configured');
+  showPage('setup', document.querySelectorAll('.tab-btn')[5]);
+}
+ 
+if (SCRIPT_URL) {
+  document.getElementById('script-url-input').value = SCRIPT_URL;
+}
+ 
+// ── SYNC STATUS ───────────────────────────────────────────────────────
+function setSyncStatus(state, label) {
+  const dot = document.getElementById('sync-dot');
+  const lbl = document.getElementById('sync-label');
+  dot.className = 'sync-dot ' + state;
+  lbl.textContent = label;
+}
+ 
+function hideLoading() {
+  document.getElementById('loading-overlay').style.display = 'none';
+}
+ 
+// ── GOOGLE SHEETS API ─────────────────────────────────────────────────
+async function loadFromSheet() {
+  if (!SCRIPT_URL) { hideLoading(); return; }
+  setSyncStatus('spin', 'Loading…');
+  document.getElementById('loading-text').textContent = 'Fetching your data…';
+  try {
+    const res = await fetch(SCRIPT_URL + '?action=getAll', { method: 'GET' });
+    const data = await res.json();
+    if (data.ok) {
+      entries = data.entries.map(e => ({
+        date:     String(e.date),
+        weight:   e.weight   !== '' && e.weight   != null ? parseFloat(e.weight)   : null,
+        calories: e.calories !== '' && e.calories != null ? parseInt(e.calories)   : null,
+        steps:    e.steps    !== '' && e.steps    != null ? parseInt(e.steps)      : null,
+        sleep:    e.sleep    !== '' && e.sleep    != null ? parseFloat(e.sleep)    : null,
+      })).filter(e => e.date);
+      sortEntries();
+      setSyncStatus('ok', 'Synced');
+      refreshAll();
+    } else {
+      setSyncStatus('err', 'Error');
+      toast('Failed to load data', 'err');
+    }
+  } catch(err) {
+    setSyncStatus('err', 'Offline / Error');
+    toast('Could not reach Google Sheets', 'err');
+  }
+  hideLoading();
+}
+ 
+async function apiUpsert(entry) {
+  if (!SCRIPT_URL) { toast('Not connected to Google Sheets', 'err'); return false; }
+  setSyncStatus('spin', 'Saving…');
+  try {
+    const res = await fetch(SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'upsert', entry })
+    });
+    const data = await res.json();
+    if (data.ok) { setSyncStatus('ok', 'Saved'); return true; }
+    setSyncStatus('err', 'Save error');
+    toast('Save failed', 'err');
+    return false;
+  } catch(err) {
+    setSyncStatus('err', 'Offline');
+    toast('Could not reach Google Sheets', 'err');
+    return false;
+  }
+}
+ 
+async function apiDelete(date) {
+  if (!SCRIPT_URL) return false;
+  setSyncStatus('spin', 'Deleting…');
+  try {
+    const res = await fetch(SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'delete', date })
+    });
+    const data = await res.json();
+    if (data.ok) { setSyncStatus('ok', 'Synced'); return true; }
+    setSyncStatus('err', 'Delete error');
+    return false;
+  } catch(err) {
+    setSyncStatus('err', 'Offline');
+    toast('Could not reach Google Sheets', 'err');
+    return false;
+  }
+}
+ 
+// ── SETUP ─────────────────────────────────────────────────────────────
+async function saveScriptUrl() {
+  const val = document.getElementById('script-url-input').value.trim();
+  if (!val || !val.startsWith('https://')) {
+    document.getElementById('connection-status').textContent = '⚠ Please paste a valid https:// URL';
+    return;
+  }
+  SCRIPT_URL = val;
+  saveConfig();
+  document.getElementById('connection-status').textContent = '⏳ Testing connection…';
+  setSyncStatus('spin', 'Connecting…');
+  document.getElementById('loading-overlay').style.display = 'flex';
+  document.getElementById('loading-text').textContent = 'Testing connection…';
+  try {
+    const res = await fetch(SCRIPT_URL + '?action=getAll');
+    const data = await res.json();
+    if (data.ok) {
+      document.getElementById('connection-status').textContent = '✅ Connected! ' + data.entries.length + ' entries loaded.';
+      entries = data.entries.map(e => ({
+        date: String(e.date),
+        weight: e.weight !== '' && e.weight != null ? parseFloat(e.weight) : null,
+        calories: e.calories !== '' && e.calories != null ? parseInt(e.calories) : null,
+        steps: e.steps !== '' && e.steps != null ? parseInt(e.steps) : null,
+        sleep: e.sleep !== '' && e.sleep != null ? parseFloat(e.sleep) : null,
+      })).filter(e => e.date);
+      sortEntries();
+      setSyncStatus('ok', 'Connected');
+      refreshAll();
+      toast('Connected to Google Sheets ✓');
+    } else {
+      document.getElementById('connection-status').textContent = '❌ Connected but got an error. Check the Apps Script.';
+      setSyncStatus('err', 'Error');
+    }
+  } catch(err) {
+    document.getElementById('connection-status').textContent = '❌ Could not connect. Check the URL and make sure the deployment is set to "Anyone".';
+    setSyncStatus('err', 'Failed');
+  }
+  hideLoading();
+}
+ 
+function copyScript() {
+  const code = document.getElementById('apps-script-code').textContent;
+  navigator.clipboard.writeText(code).then(() => toast('Code copied to clipboard ✓'));
+}
+ 
+function openSheet() {
+  if (SHEET_ID) {
+    window.open('https://docs.google.com/spreadsheets/d/' + SHEET_ID, '_blank');
+  } else if (SCRIPT_URL) {
+    window.open('https://drive.google.com', '_blank');
+    toast('Open Google Drive to find your VitalLog sheet');
+  } else {
+    toast('Set up Google Sheets connection first', 'err');
+  }
+}
+ 
+// ── NAVIGATION ────────────────────────────────────────────────────────
+function showPage(name, btn) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('page-' + name).classList.add('active');
-  event.currentTarget.classList.add('active');
+  if (btn) btn.classList.add('active');
   if (name === 'charts') setTimeout(renderCharts, 50);
   if (name === 'history') renderHistory();
   if (name === 'dashboard') refreshDashboard();
 }
-
+ 
 // ── FORM ──────────────────────────────────────────────────────────────
-function fillToday() {
-  document.getElementById('inp-date').value = todayStr();
-}
-
+function fillToday() { document.getElementById('inp-date').value = todayStr(); }
+ 
 function clearForm() {
-  ['inp-date','inp-weight','inp-calories','inp-steps','inp-sleep'].forEach(id => {
-    document.getElementById(id).value = '';
-  });
+  ['inp-date','inp-weight','inp-calories','inp-steps','inp-sleep'].forEach(id => { document.getElementById(id).value=''; });
   editingDate = null;
   document.getElementById('edit-note').style.display = 'none';
   fillToday();
 }
-
-function cancelEdit() {
-  editingDate = null;
-  document.getElementById('edit-note').style.display = 'none';
-  clearForm();
-}
-
-function saveEntry() {
+ 
+function cancelEdit() { editingDate = null; document.getElementById('edit-note').style.display='none'; clearForm(); }
+ 
+async function saveEntry() {
   const date    = document.getElementById('inp-date').value.trim();
   const weight  = parseFloat(document.getElementById('inp-weight').value);
   const cal     = parseFloat(document.getElementById('inp-calories').value);
   const steps   = parseFloat(document.getElementById('inp-steps').value);
   const sleep   = parseFloat(document.getElementById('inp-sleep').value);
-
+ 
   if (!date || !validateDateFmt(date)) { toast('Please enter a valid date (DD-MMM-YYYY)', 'err'); return; }
-
+  if (!SCRIPT_URL) { toast('Connect to Google Sheets first (Setup tab)', 'err'); return; }
+ 
   const entry = {
     date,
-    weight: isNaN(weight) ? null : Math.round(weight * 10) / 10,
-    calories: isNaN(cal) ? null : Math.round(cal),
-    steps: isNaN(steps) ? null : Math.round(steps),
-    sleep: isNaN(sleep) ? null : Math.round(sleep * 4) / 4
+    weight:   isNaN(weight) ? null : Math.round(weight*10)/10,
+    calories: isNaN(cal)    ? null : Math.round(cal),
+    steps:    isNaN(steps)  ? null : Math.round(steps),
+    sleep:    isNaN(sleep)  ? null : Math.round(sleep*4)/4
   };
-
-  const existing = entries.findIndex(e => e.date === date);
-  if (existing >= 0) {
-    entries[existing] = entry;
-    toast('Entry updated ✓');
-  } else {
-    entries.push(entry);
-    toast('Entry saved ✓');
+ 
+  const btn = document.getElementById('save-btn');
+  btn.disabled = true;
+  btn.textContent = 'Saving…';
+ 
+  const ok = await apiUpsert(entry);
+  btn.disabled = false;
+  btn.textContent = '＋ Save Entry';
+ 
+  if (ok) {
+    const existing = entries.findIndex(e => e.date === date);
+    if (existing >= 0) { entries[existing] = entry; toast('Entry updated ✓'); }
+    else { entries.push(entry); sortEntries(); toast('Entry saved ✓'); }
+    clearForm();
+    refreshAll();
   }
-
-  sortEntries();
-  save();
-  clearForm();
-  refreshAll();
 }
-
+ 
 function validateDateFmt(s) {
   if (!/^\d{2}-[A-Za-z]{3}-\d{4}$/.test(s)) return false;
   const d = parseDate(s);
   return d && !isNaN(d.getTime());
 }
-
+ 
 function editEntry(date) {
   const e = entries.find(x => x.date === date);
   if (!e) return;
-  document.getElementById('inp-date').value = e.date;
-  document.getElementById('inp-weight').value = e.weight ?? '';
-  document.getElementById('inp-calories').value = e.calories ?? '';
-  document.getElementById('inp-steps').value = e.steps ?? '';
-  document.getElementById('inp-sleep').value = e.sleep ?? '';
+  document.getElementById('inp-date').value    = e.date;
+  document.getElementById('inp-weight').value  = e.weight   ?? '';
+  document.getElementById('inp-calories').value= e.calories ?? '';
+  document.getElementById('inp-steps').value   = e.steps    ?? '';
+  document.getElementById('inp-sleep').value   = e.sleep    ?? '';
   editingDate = date;
   document.getElementById('edit-note').style.display = 'block';
-  showPageDirect('log');
+  showPage('log', document.querySelectorAll('.tab-btn')[1]);
   window.scrollTo(0,0);
 }
-
-function deleteEntry(date) {
-  if (!confirm(`Delete entry for ${date}?`)) return;
-  entries = entries.filter(e => e.date !== date);
-  save();
-  refreshAll();
-  renderHistory();
-  toast('Entry deleted');
+ 
+async function deleteEntry(date) {
+  if (!confirm('Delete entry for ' + date + '?')) return;
+  const ok = await apiDelete(date);
+  if (ok) {
+    entries = entries.filter(e => e.date !== date);
+    refreshAll();
+    renderHistory();
+    toast('Entry deleted');
+  }
 }
-
+ 
 // ── DASHBOARD ────────────────────────────────────────────────────────
 function refreshDashboard() {
-  if (entries.length === 0) {
+  if (!entries.length) {
     ['weight','calories','steps','sleep'].forEach(k => {
-      document.getElementById('stat-' + k).textContent = '—';
-      document.getElementById('delta-' + k).textContent = '';
+      document.getElementById('stat-'+k).textContent='—';
+      document.getElementById('delta-'+k).textContent='';
     });
+    document.getElementById('qs-total').textContent='0';
     return;
   }
-
-  const last = entries[entries.length - 1];
-  const prev = entries.length > 1 ? entries[entries.length - 2] : null;
-
-  const setDelta = (id, curr, pre, up_bad) => {
-    const el = document.getElementById('delta-' + id);
-    if (curr == null || pre == null) { el.textContent = ''; return; }
-    const diff = curr - pre;
-    const sign = diff > 0 ? '+' : '';
-    const cls = diff === 0 ? 'delta-neu' : (up_bad ? (diff > 0 ? 'delta-up' : 'delta-down') : (diff > 0 ? 'delta-down' : 'delta-up'));
-    el.className = 'stat-delta ' + cls;
-    el.textContent = sign + diff.toFixed(id === 'sleep' ? 1 : 0) + ' vs prev';
+  const last = entries[entries.length-1];
+  const prev = entries.length > 1 ? entries[entries.length-2] : null;
+  const setDelta = (id, curr, pre, upBad) => {
+    const el = document.getElementById('delta-'+id);
+    if (curr==null||pre==null){el.textContent='';return;}
+    const diff = curr-pre;
+    const sign = diff>0?'+':'';
+    const cls = diff===0?'delta-neu':(upBad?(diff>0?'delta-up':'delta-down'):(diff>0?'delta-down':'delta-up'));
+    el.className='stat-delta '+cls;
+    el.textContent=sign+diff.toFixed(id==='sleep'?1:0)+' vs prev';
   };
-
-  document.getElementById('stat-weight').textContent = last.weight ?? '—';
+  document.getElementById('stat-weight').textContent   = last.weight   ?? '—';
   document.getElementById('stat-calories').textContent = last.calories ? last.calories.toLocaleString() : '—';
-  document.getElementById('stat-steps').textContent = last.steps ? last.steps.toLocaleString() : '—';
-  document.getElementById('stat-sleep').textContent = last.sleep ?? '—';
-
+  document.getElementById('stat-steps').textContent    = last.steps    ? last.steps.toLocaleString()    : '—';
+  document.getElementById('stat-sleep').textContent    = last.sleep    ?? '—';
   if (prev) {
-    setDelta('weight', last.weight, prev.weight, true);
-    setDelta('calories', last.calories, prev.calories, true);
-    setDelta('steps', last.steps, prev.steps, false);
-    setDelta('sleep', last.sleep, prev.sleep, false);
+    setDelta('weight',last.weight,prev.weight,true);
+    setDelta('calories',last.calories,prev.calories,true);
+    setDelta('steps',last.steps,prev.steps,false);
+    setDelta('sleep',last.sleep,prev.sleep,false);
   }
-
-  const cutoff30 = new Date(); cutoff30.setDate(cutoff30.getDate() - 30);
-  const last30 = entries.filter(e => parseDate(e.date) >= cutoff30);
-
-  const avg = (arr, key) => {
-    const vals = arr.map(e => e[key]).filter(v => v != null);
-    return vals.length ? vals.reduce((a,b)=>a+b,0)/vals.length : null;
-  };
-
-  const fmtOrDash = (v, dec, suffix) => v != null ? v.toFixed(dec) + suffix : '—';
-
-  document.getElementById('qs-avgwt').textContent = fmtOrDash(avg(last30,'weight'),1,' kg');
-  document.getElementById('qs-avgcal').textContent = avg(last30,'calories') != null ? Math.round(avg(last30,'calories')).toLocaleString() + ' kcal' : '—';
-  document.getElementById('qs-avgsteps').textContent = avg(last30,'steps') != null ? Math.round(avg(last30,'steps')).toLocaleString() : '—';
-  document.getElementById('qs-avgsleep').textContent = fmtOrDash(avg(last30,'sleep'),1,' hrs');
-  document.getElementById('qs-total').textContent = entries.length;
-
-  const weights = entries.map(e => e.weight).filter(v => v != null);
-  document.getElementById('qs-minwt').textContent = weights.length ? Math.min(...weights) + ' kg' : '—';
-  document.getElementById('qs-maxwt').textContent = weights.length ? Math.max(...weights) + ' kg' : '—';
-
+  const cutoff30 = new Date(); cutoff30.setDate(cutoff30.getDate()-30);
+  const last30 = entries.filter(e=>parseDate(e.date)>=cutoff30);
+  const avg = (arr,key) => { const v=arr.map(e=>e[key]).filter(v=>v!=null); return v.length?v.reduce((a,b)=>a+b,0)/v.length:null; };
+  const fmt = (v,dec,suf) => v!=null?v.toFixed(dec)+suf:'—';
+  document.getElementById('qs-avgwt').textContent     = fmt(avg(last30,'weight'),1,' kg');
+  document.getElementById('qs-avgcal').textContent    = avg(last30,'calories')!=null?Math.round(avg(last30,'calories')).toLocaleString()+' kcal':'—';
+  document.getElementById('qs-avgsteps').textContent  = avg(last30,'steps')!=null?Math.round(avg(last30,'steps')).toLocaleString():'—';
+  document.getElementById('qs-avgsleep').textContent  = fmt(avg(last30,'sleep'),1,' hrs');
+  document.getElementById('qs-total').textContent     = entries.length;
+  const weights = entries.map(e=>e.weight).filter(v=>v!=null);
+  document.getElementById('qs-minwt').textContent = weights.length?Math.min(...weights)+' kg':'—';
+  document.getElementById('qs-maxwt').textContent = weights.length?Math.max(...weights)+' kg':'—';
   renderMiniCharts();
 }
-
+ 
 // ── HISTORY ──────────────────────────────────────────────────────────
 function renderHistory() {
-  const search = (document.getElementById('search-input').value || '').toLowerCase();
-  const filtered = entries.filter(e => e.date.toLowerCase().includes(search)).slice().reverse();
+  const search = (document.getElementById('search-input').value||'').toLowerCase();
+  const filtered = entries.filter(e=>e.date.toLowerCase().includes(search)).slice().reverse();
+  document.getElementById('entry-count').textContent = entries.length+' entries';
   const tbody = document.getElementById('history-body');
-  document.getElementById('entry-count').textContent = entries.length + ' entries';
-
-  if (filtered.length === 0) {
-    tbody.innerHTML = '';
-    document.getElementById('history-empty').style.display = 'block';
+  if (!filtered.length) {
+    tbody.innerHTML='';
+    document.getElementById('history-empty').style.display='block';
     return;
   }
-  document.getElementById('history-empty').style.display = 'none';
-
-  tbody.innerHTML = filtered.map(e => `
+  document.getElementById('history-empty').style.display='none';
+  tbody.innerHTML = filtered.map(e=>`
     <tr>
       <td class="date-cell">${e.date}</td>
-      <td>${e.weight ?? '—'}</td>
-      <td>${e.calories != null ? e.calories.toLocaleString() : '—'}</td>
-      <td>${e.steps != null ? e.steps.toLocaleString() : '—'}</td>
-      <td>${e.sleep ?? '—'}</td>
+      <td>${e.weight??'—'}</td>
+      <td>${e.calories!=null?e.calories.toLocaleString():'—'}</td>
+      <td>${e.steps!=null?e.steps.toLocaleString():'—'}</td>
+      <td>${e.sleep??'—'}</td>
       <td>
         <button class="btn btn-ghost btn-sm" onclick="editEntry('${e.date}')">Edit</button>
         <button class="btn btn-danger btn-sm" style="margin-left:4px;" onclick="deleteEntry('${e.date}')">Del</button>
       </td>
-    </tr>
-  `).join('');
+    </tr>`).join('');
 }
-
+ 
 // ── CHARTS ───────────────────────────────────────────────────────────
-const CHART_COLORS = {
-  weight:   '#7c6cff',
-  calories: '#f5a623',
-  steps:    '#2dd4a0',
-  sleep:    '#4ca8f5'
-};
-
-function getFilteredEntries() {
-  if (currentRange === 0) return entries;
-  const cutoff = new Date();
-  cutoff.setDate(cutoff.getDate() - currentRange);
-  return entries.filter(e => parseDate(e.date) >= cutoff);
+const CC = { weight:'#7c6cff', calories:'#f5a623', steps:'#2dd4a0', sleep:'#4ca8f5' };
+ 
+function getFiltered() {
+  if (!currentRange) return entries;
+  const c=new Date(); c.setDate(c.getDate()-currentRange);
+  return entries.filter(e=>parseDate(e.date)>=c);
 }
-
-function buildChart(canvasId, label, key, color, type = 'line') {
-  const ctx = document.getElementById(canvasId);
-  if (!ctx) return;
-  if (chartInstances[canvasId]) { chartInstances[canvasId].destroy(); }
-  const data = getFilteredEntries();
-  const labels = data.map(e => e.date);
-  const values = data.map(e => e[key]);
-
-  chartInstances[canvasId] = new Chart(ctx, {
-    type,
-    data: {
-      labels,
-      datasets: [{
-        label,
-        data: values,
-        borderColor: color,
-        backgroundColor: color + '22',
-        borderWidth: 2,
-        pointRadius: data.length > 30 ? 2 : 4,
-        pointBackgroundColor: color,
-        tension: 0.35,
-        fill: true,
-        spanGaps: true
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: { legend: { display: false }, tooltip: { backgroundColor: '#1e2535', titleColor: '#e8eaf6', bodyColor: '#8b92a8', borderColor: '#2a3246', borderWidth: 1 } },
-      scales: {
-        x: { ticks: { color: '#5a6278', maxRotation: 45, font: { family: 'DM Mono', size: 10 }, maxTicksLimit: 10 }, grid: { color: 'rgba(255,255,255,0.04)' } },
-        y: { ticks: { color: '#5a6278', font: { family: 'DM Mono', size: 10 } }, grid: { color: 'rgba(255,255,255,0.04)' } }
-      }
+ 
+function buildChart(id, label, key, color, type='line') {
+  const ctx=document.getElementById(id); if(!ctx) return;
+  if(chartInstances[id]) chartInstances[id].destroy();
+  const data=getFiltered();
+  chartInstances[id]=new Chart(ctx,{
+    type, data:{ labels:data.map(e=>e.date), datasets:[{ label, data:data.map(e=>e[key]), borderColor:color, backgroundColor:color+'22', borderWidth:2, pointRadius:data.length>30?2:4, pointBackgroundColor:color, tension:0.35, fill:true, spanGaps:true }] },
+    options:{ responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false}, tooltip:{backgroundColor:'#1e2535',titleColor:'#e8eaf6',bodyColor:'#8b92a8',borderColor:'#2a3246',borderWidth:1} },
+      scales:{ x:{ticks:{color:'#5a6278',maxRotation:45,font:{family:'DM Mono',size:10},maxTicksLimit:10},grid:{color:'rgba(255,255,255,0.04)'}}, y:{ticks:{color:'#5a6278',font:{family:'DM Mono',size:10}},grid:{color:'rgba(255,255,255,0.04)'}} }
     }
   });
 }
-
+ 
 function renderCharts() {
-  buildChart('chart-weight',   'Weight (kg)',    'weight',   CHART_COLORS.weight);
-  buildChart('chart-calories', 'Calories (kcal)','calories', CHART_COLORS.calories, 'bar');
-  buildChart('chart-steps',    'Steps',          'steps',    CHART_COLORS.steps, 'bar');
-  buildChart('chart-sleep',    'Sleep (hrs)',    'sleep',    CHART_COLORS.sleep);
+  buildChart('chart-weight','Weight (kg)','weight',CC.weight);
+  buildChart('chart-calories','Calories','calories',CC.calories,'bar');
+  buildChart('chart-steps','Steps','steps',CC.steps,'bar');
+  buildChart('chart-sleep','Sleep (hrs)','sleep',CC.sleep);
 }
-
+ 
 function renderMiniCharts() {
-  const last14 = entries.slice(-14);
-  const buildMini = (id, key, color) => {
-    const ctx = document.getElementById(id);
-    if (!ctx) return;
-    if (chartInstances[id]) chartInstances[id].destroy();
-    chartInstances[id] = new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: last14.map(e => e.date),
-        datasets: [{ data: last14.map(e => e[key]), borderColor: color, backgroundColor: color + '18', borderWidth: 2, pointRadius: 2, tension: 0.4, fill: true, spanGaps: true }]
-      },
-      options: {
-        responsive: true, maintainAspectRatio: false,
-        plugins: { legend: { display: false }, tooltip: { backgroundColor: '#1e2535', titleColor: '#e8eaf6', bodyColor: '#8b92a8' } },
-        scales: {
-          x: { display: false },
-          y: { ticks: { color: '#5a6278', font: { family: 'DM Mono', size: 9 }, maxTicksLimit: 5 }, grid: { color: 'rgba(255,255,255,0.04)' } }
-        }
-      }
+  const l14=entries.slice(-14);
+  const mini=(id,key,color)=>{
+    const ctx=document.getElementById(id); if(!ctx)return;
+    if(chartInstances[id]) chartInstances[id].destroy();
+    chartInstances[id]=new Chart(ctx,{
+      type:'line', data:{labels:l14.map(e=>e.date),datasets:[{data:l14.map(e=>e[key]),borderColor:color,backgroundColor:color+'18',borderWidth:2,pointRadius:2,tension:0.4,fill:true,spanGaps:true}]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{backgroundColor:'#1e2535',titleColor:'#e8eaf6',bodyColor:'#8b92a8'}},
+        scales:{x:{display:false},y:{ticks:{color:'#5a6278',font:{family:'DM Mono',size:9},maxTicksLimit:5},grid:{color:'rgba(255,255,255,0.04)'}}}}
     });
   };
-  buildMini('mini-weight', 'weight', CHART_COLORS.weight);
-  buildMini('mini-steps',  'steps',  CHART_COLORS.steps);
+  mini('mini-weight','weight',CC.weight);
+  mini('mini-steps','steps',CC.steps);
 }
-
+ 
 function setRange(n) {
-  currentRange = n;
-  ['14','30','90','all'].forEach(r => {
-    const el = document.getElementById('range-' + r);
-    if (el) el.classList.toggle('btn-primary', (r === String(n) || (r === 'all' && n === 0)));
-    if (el) el.classList.toggle('btn-ghost', !(r === String(n) || (r === 'all' && n === 0)));
+  currentRange=n;
+  ['14','30','90','all'].forEach(r=>{
+    const el=document.getElementById('range-'+r);
+    if(el){ el.classList.toggle('btn-primary',(r===String(n)||(r==='all'&&n===0))); el.classList.toggle('btn-ghost',!(r===String(n)||(r==='all'&&n===0))); }
   });
   renderCharts();
 }
-
+ 
 // ── EXPORT ───────────────────────────────────────────────────────────
 function exportCSV() {
-  if (!entries.length) { toast('No data to export', 'err'); return; }
-  const header = 'Date,Weight (kg),Calories (kcal),Steps,Sleep (hrs)';
-  const rows = entries.map(e => [e.date, e.weight ?? '', e.calories ?? '', e.steps ?? '', e.sleep ?? ''].join(','));
-  const csv = [header, ...rows].join('\n');
-  download('vitallog_export.csv', 'text/csv', csv);
+  if(!entries.length){toast('No data to export','err');return;}
+  const rows=entries.map(e=>[e.date,e.weight??'',e.calories??'',e.steps??'',e.sleep??''].join(','));
+  download('vitallog_export.csv','text/csv',['Date,Weight (kg),Calories (kcal),Steps,Sleep (hrs)',...rows].join('\n'));
   toast('CSV downloaded ✓');
 }
-
+ 
 function exportXLSX() {
-  if (!entries.length) { toast('No data to export', 'err'); return; }
-  const ws_data = [
-    ['Date', 'Weight (kg)', 'Calories (kcal)', 'Steps', 'Sleep (hrs)'],
-    ...entries.map(e => [e.date, e.weight ?? '', e.calories ?? '', e.steps ?? '', e.sleep ?? ''])
-  ];
-  const wb = XLSX.utils.book_new();
-  const ws = XLSX.utils.aoa_to_sheet(ws_data);
-  ws['!cols'] = [{wch:14},{wch:12},{wch:16},{wch:10},{wch:12}];
-  XLSX.utils.book_append_sheet(wb, ws, 'VitalLog Data');
-  XLSX.writeFile(wb, 'vitallog_export.xlsx');
+  if(!entries.length){toast('No data to export','err');return;}
+  const wb=XLSX.utils.book_new();
+  const ws=XLSX.utils.aoa_to_sheet([['Date','Weight (kg)','Calories (kcal)','Steps','Sleep (hrs)'],...entries.map(e=>[e.date,e.weight??'',e.calories??'',e.steps??'',e.sleep??''])]);
+  ws['!cols']=[{wch:14},{wch:12},{wch:16},{wch:10},{wch:12}];
+  XLSX.utils.book_append_sheet(wb,ws,'VitalLog Data');
+  XLSX.writeFile(wb,'vitallog_export.xlsx');
   toast('Excel file downloaded ✓');
 }
-
+ 
 function exportPDF() {
-  if (!entries.length) { toast('No data to export', 'err'); return; }
-
-  const rows = entries.slice().reverse().map(e => `
-    <tr>
-      <td>${e.date}</td>
-      <td>${e.weight ?? '—'}</td>
-      <td>${e.calories != null ? e.calories.toLocaleString() : '—'}</td>
-      <td>${e.steps != null ? e.steps.toLocaleString() : '—'}</td>
-      <td>${e.sleep ?? '—'}</td>
-    </tr>
-  `).join('');
-
-  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
-  <title>VitalLog Report</title>
-  <style>
-    body { font-family: 'Segoe UI', sans-serif; margin: 40px; color: #1a1a2e; }
-    h1 { font-size: 22px; margin-bottom: 4px; }
-    .sub { color: #666; font-size: 13px; margin-bottom: 20px; }
-    table { width: 100%; border-collapse: collapse; font-size: 13px; }
-    th { background: #0f1117; color: white; padding: 9px 12px; text-align: left; }
-    td { padding: 8px 12px; border-bottom: 1px solid #eee; }
-    tr:nth-child(even) td { background: #f8f8ff; }
-    .footer { margin-top: 20px; font-size: 11px; color: #999; }
-  </style></head><body>
-  <h1>VitalLog — Health Report</h1>
-  <div class="sub">Generated: ${new Date().toLocaleString()} · Total entries: ${entries.length}</div>
-  <table>
-    <thead><tr><th>Date</th><th>Weight (kg)</th><th>Calories (kcal)</th><th>Steps</th><th>Sleep (hrs)</th></tr></thead>
-    <tbody>${rows}</tbody>
-  </table>
-  <div class="footer">VitalLog Personal Health Tracker</div>
-  </body></html>`;
-
-  const win = window.open('', '_blank');
-  win.document.write(html);
-  win.document.close();
-  win.onload = () => { win.print(); };
+  if(!entries.length){toast('No data to export','err');return;}
+  const rows=entries.slice().reverse().map(e=>`<tr><td>${e.date}</td><td>${e.weight??'—'}</td><td>${e.calories!=null?e.calories.toLocaleString():'—'}</td><td>${e.steps!=null?e.steps.toLocaleString():'—'}</td><td>${e.sleep??'—'}</td></tr>`).join('');
+  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>VitalLog Report</title><style>body{font-family:'Segoe UI',sans-serif;margin:40px;color:#1a1a2e;}h1{font-size:22px;margin-bottom:4px;}.sub{color:#666;font-size:13px;margin-bottom:20px;}table{width:100%;border-collapse:collapse;font-size:13px;}th{background:#0f1117;color:white;padding:9px 12px;text-align:left;}td{padding:8px 12px;border-bottom:1px solid #eee;}tr:nth-child(even) td{background:#f8f8ff;}</style></head><body><h1>VitalLog — Health Report</h1><div class="sub">Generated: ${new Date().toLocaleString()} · Total entries: ${entries.length}</div><table><thead><tr><th>Date</th><th>Weight (kg)</th><th>Calories (kcal)</th><th>Steps</th><th>Sleep (hrs)</th></tr></thead><tbody>${rows}</tbody></table></body></html>`;
+  const win=window.open('','_blank'); win.document.write(html); win.document.close(); win.onload=()=>win.print();
   toast('PDF print dialog opened ✓');
 }
-
-function exportJSON() {
-  const json = JSON.stringify({ version: 1, exported: new Date().toISOString(), entries }, null, 2);
-  download('vitallog_backup.json', 'application/json', json);
-  toast('Backup downloaded ✓');
-}
-
-function importJSON() {
-  document.getElementById('json-import').click();
-}
-
-function handleImport(evt) {
-  const file = evt.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    try {
-      const data = JSON.parse(e.target.result);
-      const imported = data.entries || data;
-      if (!Array.isArray(imported)) throw new Error();
-      if (!confirm(`Import ${imported.length} entries? This will merge with existing data.`)) return;
-      imported.forEach(entry => {
-        if (!entries.find(x => x.date === entry.date)) entries.push(entry);
-      });
-      sortEntries();
-      save();
-      refreshAll();
-      toast('Import successful ✓');
-    } catch(err) {
-      toast('Invalid backup file', 'err');
-    }
-  };
-  reader.readAsText(file);
-  evt.target.value = '';
-}
-
-function clearAll() {
-  if (!confirm('Delete ALL data permanently? This cannot be undone.')) return;
-  entries = [];
-  save();
-  refreshAll();
-  renderHistory();
-  toast('All data cleared');
-}
-
-// ── UTILS ─────────────────────────────────────────────────────────────
+ 
 function download(filename, type, content) {
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([content], { type }));
-  a.download = filename;
-  a.click();
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([content],{type}));
+  a.download=filename; a.click();
 }
-
-function toast(msg, type) {
-  const el = document.getElementById('toast');
-  el.textContent = msg;
-  el.style.borderLeftColor = type === 'err' ? 'var(--red)' : 'var(--green)';
-  el.classList.add('show');
-  clearTimeout(el._t);
-  el._t = setTimeout(() => el.classList.remove('show'), 2800);
-}
-
-function refreshAll() {
-  refreshDashboard();
-}
-
-function showPageDirect(name) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('page-' + name).classList.add('active');
-  document.querySelectorAll('.tab-btn').forEach(b => {
-    if (b.textContent.toLowerCase().includes(name)) b.classList.add('active');
-  });
-}
-
-// Set range button states
-setRange(30);
-
-// ── CALENDAR PICKER ──────────────────────────────────────────────────
-let calYear = new Date().getFullYear();
-let calMonth = new Date().getMonth();
-let calOpen = false;
-
+ 
+// ── CALENDAR ─────────────────────────────────────────────────────────
 function toggleCalendar() {
-  calOpen = !calOpen;
-  const el = document.getElementById('cal-dropdown');
-  el.style.display = calOpen ? 'block' : 'none';
-  if (calOpen) {
-    // Sync to current text value if valid, else today
-    const curr = parseDate(document.getElementById('inp-date').value.trim());
-    if (curr && !isNaN(curr)) {
-      calYear = curr.getFullYear();
-      calMonth = curr.getMonth();
-    } else {
-      calYear = new Date().getFullYear();
-      calMonth = new Date().getMonth();
-    }
+  calOpen=!calOpen;
+  const el=document.getElementById('cal-dropdown');
+  el.style.display=calOpen?'block':'none';
+  if(calOpen){
+    const curr=parseDate(document.getElementById('inp-date').value.trim());
+    if(curr&&!isNaN(curr)){calYear=curr.getFullYear();calMonth=curr.getMonth();}
+    else{calYear=new Date().getFullYear();calMonth=new Date().getMonth();}
     renderCalGrid();
   }
 }
-
-function calNav(dir) {
-  calMonth += dir;
-  if (calMonth > 11) { calMonth = 0; calYear++; }
-  if (calMonth < 0)  { calMonth = 11; calYear--; }
+ 
+function calNav(dir){
+  calMonth+=dir;
+  if(calMonth>11){calMonth=0;calYear++;}
+  if(calMonth<0){calMonth=11;calYear--;}
   renderCalGrid();
 }
-
-function renderCalGrid() {
-  const label = document.getElementById('cal-month-label');
-  label.textContent = MONTHS[calMonth] + ' ' + calYear;
-
-  const grid = document.getElementById('cal-grid');
-  const firstDay = new Date(calYear, calMonth, 1).getDay();
-  const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
-
-  const selectedStr = document.getElementById('inp-date').value.trim();
-  const todayStr2 = formatDate(new Date());
-
-  let html = '';
-  for (let i = 0; i < firstDay; i++) {
-    html += '<span></span>';
+ 
+function renderCalGrid(){
+  document.getElementById('cal-month-label').textContent=MONTHS[calMonth]+' '+calYear;
+  const grid=document.getElementById('cal-grid');
+  const firstDay=new Date(calYear,calMonth,1).getDay();
+  const daysInMonth=new Date(calYear,calMonth+1,0).getDate();
+  const selectedStr=document.getElementById('inp-date').value.trim();
+  const tStr=formatDate(new Date());
+  let html='';
+  for(let i=0;i<firstDay;i++) html+='<span></span>';
+  for(let d=1;d<=daysInMonth;d++){
+    const ds=String(d).padStart(2,'0')+'-'+MONTHS[calMonth]+'-'+calYear;
+    const isSel=ds===selectedStr, isTod=ds===tStr;
+    const bg=isSel?'var(--accent)':isTod?'rgba(124,108,255,0.18)':'none';
+    const col=isSel?'white':isTod?'var(--accent2)':'var(--text2)';
+    html+=`<button type="button" onclick="calSelectDate('${ds}')" style="font-size:0.82rem;padding:5px 2px;border-radius:5px;cursor:pointer;border:none;font-family:var(--font-mono);background:${bg};color:${col};">${d}</button>`;
   }
-  for (let d = 1; d <= daysInMonth; d++) {
-    const dateStr = String(d).padStart(2,'0') + '-' + MONTHS[calMonth] + '-' + calYear;
-    const isSelected = dateStr === selectedStr;
-    const isToday = dateStr === todayStr2;
-    const style = [
-      'font-size:0.82rem',
-      'padding:5px 2px',
-      'border-radius:5px',
-      'cursor:pointer',
-      'border:none',
-      'font-family:var(--font-mono)',
-      'transition:background 0.15s',
-      isSelected
-        ? 'background:var(--accent); color:white; font-weight:500;'
-        : isToday
-          ? 'background:rgba(124,108,255,0.18); color:var(--accent2);'
-          : 'background:none; color:var(--text2);'
-    ].join(';');
-    html += `<button type="button" onclick="calSelectDate('${dateStr}')" style="${style}" onmouseover="this.style.background='${isSelected?'var(--accent)':'rgba(255,255,255,0.07)'}'" onmouseout="this.style.background='${isSelected?'var(--accent)':isToday?'rgba(124,108,255,0.18)':'none'}'">${d}</button>`;
-  }
-  grid.innerHTML = html;
+  grid.innerHTML=html;
 }
-
-function calSelectDate(dateStr) {
-  document.getElementById('inp-date').value = dateStr;
-  calOpen = false;
-  document.getElementById('cal-dropdown').style.display = 'none';
+ 
+function calSelectDate(ds){
+  document.getElementById('inp-date').value=ds;
+  calOpen=false;
+  document.getElementById('cal-dropdown').style.display='none';
 }
-
-function calSelectToday() {
-  const t = new Date();
-  calYear = t.getFullYear();
-  calMonth = t.getMonth();
+ 
+function calSelectToday(){
+  const t=new Date(); calYear=t.getFullYear(); calMonth=t.getMonth();
   calSelectDate(formatDate(t));
 }
-
-function syncCalFromText() {
-  const val = document.getElementById('inp-date').value.trim();
-  const d = parseDate(val);
-  if (d && !isNaN(d) && calOpen) {
-    calYear = d.getFullYear();
-    calMonth = d.getMonth();
-    renderCalGrid();
-  }
+ 
+function syncCalFromText(){
+  const d=parseDate(document.getElementById('inp-date').value.trim());
+  if(d&&!isNaN(d)&&calOpen){calYear=d.getFullYear();calMonth=d.getMonth();renderCalGrid();}
 }
-
-// Close calendar on outside click
-document.addEventListener('click', function(e) {
-  if (!calOpen) return;
-  const drop = document.getElementById('cal-dropdown');
-  const btn  = document.getElementById('cal-toggle-btn');
-  if (drop && !drop.contains(e.target) && e.target !== btn) {
-    calOpen = false;
-    drop.style.display = 'none';
-  }
+ 
+document.addEventListener('click',function(e){
+  if(!calOpen)return;
+  const drop=document.getElementById('cal-dropdown');
+  const btn=document.getElementById('cal-toggle-btn');
+  if(drop&&!drop.contains(e.target)&&e.target!==btn){calOpen=false;drop.style.display='none';}
 });
+ 
+// ── TOAST ─────────────────────────────────────────────────────────────
+function toast(msg,type){
+  const el=document.getElementById('toast');
+  el.textContent=msg;
+  el.style.borderLeftColor=type==='err'?'var(--red)':'var(--green)';
+  el.classList.add('show');
+  clearTimeout(el._t);
+  el._t=setTimeout(()=>el.classList.remove('show'),2800);
+}
+ 
+function refreshAll(){ refreshDashboard(); }
+ 
+setRange(30);
 </script>
 </body>
 </html>
